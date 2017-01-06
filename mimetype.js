@@ -25,10 +25,6 @@
 		}
 	};
 
-	if (exports === undefined) {
-		exports = {};
-	}
-
 	MimeType = {
 		charset: 'UTF-8',
 		catalog: {},
@@ -63,10 +59,10 @@
                         this.catalog[ext].indexOf('text/') === 0 &&
                         this.catalog[ext].indexOf('charset') < 0) {
 					return this.catalog[ext] + '; charset=' + charset;
-				} else {
-					return this.catalog[ext];
-				}
-			} else if (default_mime_type !== undefined) {
+				} 
+				return this.catalog[ext];
+			}
+            if (default_mime_type !== undefined) {
 				if (include_charset === true &&
                         default_mime_type.indexOf('text/') === 0) {
 					return default_mime_type + '; charset=' + charset;
@@ -76,18 +72,18 @@
 			return false;
 		},
 		set: function (exts, mime_type_string) {
-			var result = true, self = this;
+			var result = true, me = this;
             //console.log("DEBUG exts.indexOf(',')", typeof exts.indexOf(','), exts.indexOf(','));
 			if (exts.indexOf(',') > -1) {
 				exts.split(',').forEach(function (ext) {
 					ext = ext.trim();
-					self.catalog[ext] = mime_type_string;
-					if (self.catalog[ext] !== mime_type_string) {
+					me.catalog[ext] = mime_type_string;
+					if (me.catalog[ext] !== mime_type_string) {
 						result = false;
 					}
 				});
 			} else {
-				self.catalog[exts] = mime_type_string;
+				me.catalog[exts] = mime_type_string;
 			}
 			return result;
 		},
@@ -96,14 +92,14 @@
 			return (this.catalog[ext] === undefined);
 		},
 		forEach: function (callback) {
-			var self = this, ext;
+			var me = this, ext;
 			// Mongo 2.2. Shell doesn't support Object.keys()
-			for (ext in self.catalog) {
-				if (self.catalog.hasOwnProperty(ext)) {
-					callback(ext, self.catalog[ext]);
+			for (ext in me.catalog) {
+				if (me.catalog.hasOwnProperty(ext)) {
+					callback(ext, me.catalog[ext]);
 				}
 			}
-			return self.catalog;
+			return me.catalog;
 		}
 	};
 
@@ -746,7 +742,10 @@
 	MimeType.set("README,LICENSE,COPYING,TODO,ABOUT,AUTHORS,CONTRIBUTORS",
 		"text/plain");
 	MimeType.set("manifest,.manifest,.mf,.appcache", "text/cache-manifest");
-	if (exports !== undefined) {
+	if (typeof exports !== 'undefined') {
+        if (typeof module !== 'undefined' && module.exports) {
+            exports = module.exports;
+        }
 		exports.charset = MimeType.charset;
 		exports.catalog = MimeType.catalog;
 		exports.lookup = MimeType.lookup;
@@ -754,6 +753,7 @@
 		exports.del = MimeType.del;
 		exports.forEach = MimeType.forEach;
 	}
+    
     // Note: Chrome now defines window.MimeType, only define for legacy usage.
     if (self.MimeType === undefined) {
         self.MimeType = MimeType;
@@ -762,5 +762,12 @@
     if (self.mimeType === undefined) {
         self.mimeType = MimeType;
     }
+
+    if (typeof define === 'function' && define.amd) {
+        define('MimeType', [], function() {
+            return MimeType;
+        });
+    }
+    
 	return self;
 }(this));
